@@ -1,0 +1,14 @@
+{
+  "name": "northside-api",
+  "version": "1.0.0",
+  "description": "Whitelist API Server untuk BOT Northside",
+  "main": "api-server.js",
+  "scripts": {
+    "start": "node api-server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "googleapis": "^131.0.0"
+  }
+}

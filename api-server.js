@@ -12,6 +12,13 @@ const { google } = require("googleapis");
 const app = express();
 const PORT = process.env.API_PORT || 3001;
 
+// Pastikan folder data ada
+const dataDir = path.join(__dirname, "data");
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir);
+  console.log("[INIT] Folder 'data' dibuat otomatis ✅");
+}
+
 app.use(cors());
 app.use(express.json());
 
@@ -23,14 +30,14 @@ const auth = new google.auth.GoogleAuth({
 });
 
 const sheets = google.sheets({ version: "v4", auth });
+
+// ⚠️ Ganti sesuai nama sheet di Google Sheets kamu!
+// Misalnya "Sheet1" atau "Whitelist Server"
 const SPREADSHEET_ID = "1jJdqZNmBdLqXoZeRTSmZvsM-HiKMs96hF5TSS-xWbXU";
-const SHEET_NAME = "Whitelist Server";
+const SHEET_NAME = "WhitelistServer"; // <--- ubah sesuai nama tab sheet kamu!
 
 // ========== HELPER FUNCTIONS ==========
 
-/**
- * Membaca data whitelist dari Google Sheets
- */
 async function getWhitelistFromSheets() {
   try {
     const response = await sheets.spreadsheets.values.get({
@@ -55,9 +62,6 @@ async function getWhitelistFromSheets() {
   }
 }
 
-/**
- * Menyimpan data whitelist ke Google Sheets
- */
 async function saveWhitelistToSheets(servers) {
   try {
     await sheets.spreadsheets.values.clear({
@@ -92,10 +96,7 @@ async function saveWhitelistToSheets(servers) {
 
 // ========== API ENDPOINTS ==========
 
-/**
- * GET /api/whitelist/check/:ip
- * Cek apakah IP ada di whitelist
- */
+// ✅ Cek apakah IP server ada di whitelist
 app.get("/api/whitelist/check/:ip", async (req, res) => {
   try {
     const { ip } = req.params;
@@ -107,7 +108,7 @@ app.get("/api/whitelist/check/:ip", async (req, res) => {
 
     console.log(`[API] Result: ${isWhitelisted ? "WHITELISTED ✅" : "NOT WHITELISTED ❌"}`);
 
-    // Log activity
+    // Simpan log aktivitas ke file
     const logData = {
       ip: ip,
       action: "check",
@@ -139,10 +140,7 @@ app.get("/api/whitelist/check/:ip", async (req, res) => {
   }
 });
 
-/**
- * GET /api/whitelist/list
- * Mendapatkan semua server di whitelist
- */
+// ✅ Mendapatkan semua server yang di-whitelist
 app.get("/api/whitelist/list", async (req, res) => {
   try {
     const servers = await getWhitelistFromSheets();
@@ -163,10 +161,7 @@ app.get("/api/whitelist/list", async (req, res) => {
   }
 });
 
-/**
- * POST /api/whitelist/add
- * Menambah server ke whitelist
- */
+// ✅ Menambahkan server baru ke whitelist
 app.post("/api/whitelist/add", async (req, res) => {
   try {
     const { ip, owner, addedBy } = req.body;
@@ -221,10 +216,7 @@ app.post("/api/whitelist/add", async (req, res) => {
   }
 });
 
-/**
- * POST /api/whitelist/remove
- * Menghapus server dari whitelist
- */
+// ✅ Menghapus server dari whitelist
 app.post("/api/whitelist/remove", async (req, res) => {
   try {
     const { ip } = req.body;
@@ -273,10 +265,7 @@ app.post("/api/whitelist/remove", async (req, res) => {
   }
 });
 
-/**
- * GET /api/status
- * Health check
- */
+// ✅ Endpoint status server
 app.get("/api/status", (req, res) => {
   res.json({
     success: true,
@@ -286,10 +275,7 @@ app.get("/api/status", (req, res) => {
   });
 });
 
-/**
- * GET /
- * Default route (optional)
- */
+// ✅ Default route kalau buka root URL
 app.get("/", (req, res) => {
   res.send("🟢 Whitelist API Server is running. Use /api/status to check health.");
 });
